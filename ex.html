@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Simple Polygon</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="d3.v4.min.js"></script>
+<script src="PapaParse-5.0.2/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/csv-js@1.0.0/csv.min.js"></script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+
+      // This example creates a simple polygon representing the Bermuda Triangle.
+var coord=[];
+var elem = [];
+var poly=[];
+$.ajax({
+  url: 'LandData-Coordinates.csv',
+  dataType: 'text',
+}).done(test);
+function test(data) {	
+//svar d = d3.csvParse(data);
+//console.log(typeof d);
+
+var da = Papa.parse(data);
+console.log(da);
+var j=-1;
+var t=0;
+var d= da['data'];
+//console.log(d);
+const keys = Object.values(d);
+for (var k=0 ; k<d.length;k++) {
+	//console.log("manish");
+	var t=Object.keys(d[k]);
+	var v=Object.values(d[k]);
+	const keys = Object.keys(d);
+	coord=[];
+for(var i=0 ; i<d[k].length;i++) {
+	el=[];
+	//elem.id=d[k][0];
+	if(d[k][i] != "") {
+	if (i==0) {
+		console.log(d[k][0]);
+		 }
+	if(i%2!=0)//storing the latitude and longitude 
+{	var el ={};
+	el.lat=parseFloat(d[k][i]);
+	el.lng=parseFloat(d[k][i+1]);
+	i++;
+	el.id=parseFloat(d[k][0]); 
+	coord.push(el);//pushing in an array 
+}
+//coord.push(elem);		
+}
+	else 
+		delete d[k][i];
+}
+poly.push(coord); //the array that would store all the coordinates
+}
+console.log(poly);
+	
+/*	for (var l=0;l < d[k].length ;l++){
+		var c=d[k][l];
+		if( l==0 ){
+			t=0;
+j++;
+			coord[j][t].id=c;
+
+}
+		else if( l%2 !=0) {
+			coord[j][t].lat=c;
+			coord[j][t].lng=d[k][l+1];
+			t++;
+			l++;
+ "26.576569"
+2: "81.585839"
+3: "26.576531"
+4: "81.586038"
+5: "26.576328"
+6: "81.585943"
+7: "26.576434"
+8: "81.585739"
+}
+}*/
+}
+
+
+	var map;
+      var infoWindow;
+      function initMap() {
+         map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 18,
+          center: {lat: 26.57482, lng: 81.585295},
+          mapTypeId: 'terrain'
+        });
+
+        // Define the LatLng coordinates for the polygon's path.
+	for(var i=0;i<poly.length;i++)
+{
+       var triangleCoords = [];
+	for (var j=0;j<poly[i].length;j++)
+{
+triangleCoords.push(poly[i][j]);
+//console.log(poly[i][j]);
+	}
+        // Construct the polygon.
+        var bermudaTriangle = new google.maps.Polygon({
+          paths: triangleCoords,
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#FF0000',
+          fillOpacity: 0.0
+        });
+        bermudaTriangle.setMap(map);
+	 bermudaTriangle.addListener('click', showArrays);
+
+        infoWindow = new google.maps.InfoWindow;
+      }
+
+}
+ function showArrays(event) {
+        // Since this polygon has only one path, we can call getPath() to return the
+        // MVCArray of LatLngs.
+        var vertices = this.getPath();
+
+        var contentString = '<b>Bermuda Triangle polygon</b><br>' +
+            'Clicked location: <br>' + event.latLng.lat() + ',' + event.latLng.lng() +
+            '<br>';
+	//for(var u=0;u<poly.length;u++){
+        // Iterate over the vertices.
+        for (var i =0; i < vertices.getLength(); i++) {
+          var xy = vertices.getAt(i);
+	
+          contentString += '<br>' + 'Coordinate ' + i + ':<br>' + xy.lat() + ',' +
+              xy.lng();
+        }
+
+        // Replace the info window's content and position.
+        infoWindow.setContent(contentString);
+        infoWindow.setPosition(event.latLng);
+
+        infoWindow.open(map);
+      }
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDPVx6Ja0HWkbh9lTtggsW53mROLr8ubsU&callback=initMap">
+    </script>
+  </body>
+</html>
